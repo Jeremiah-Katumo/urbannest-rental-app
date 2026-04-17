@@ -1,0 +1,7 @@
+{
+  "name": "UrbanNest Rental Ecosystem",
+  "description": "A comprehensive rental management platform featuring a high-end customer marketplace for families and individuals, plus a powerful dashboard for landlords and agents to manage vacant properties and bookings.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
