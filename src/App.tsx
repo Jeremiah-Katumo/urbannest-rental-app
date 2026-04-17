@@ -34,10 +34,12 @@ import { House, UserRole, Booking, SearchFilters, User, AuthPage, Campaign, Paym
 import { MessageSquare, X } from 'lucide-react';
 import { useAuthStore } from './store/auth.store';
 import { useHouseStore } from './store/house.store';
+import { useAppStore } from './store/app.store';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
   // AuthStore 
   const currentUser = useAuthStore((s) => s.currentUser);
   const authView = useAuthStore((s) => s.authView);
@@ -47,6 +49,8 @@ const App: React.FC = () => {
   const setAuthView = useAuthStore((s) => s.setAuthView);
   const setCurrentUser = useAuthStore((s) => s.setCurrentUser);
   const toggleFavorite = useAuthStore((s) => s.toggleFavorite);
+
+  const isManagementMode = useAppStore((s) => s.isManagementMode(location.pathname, currentUser?.role));
 
   // HouseStore
   const houses = useHouseStore((hs) => hs.houses);
@@ -118,8 +122,8 @@ const App: React.FC = () => {
   //   amenities: []
   // });
   //
-  const isManagementMode = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'LANDLORD' || currentUser.role === 'AGENT' || currentUser.role === 'SUPPORT' || currentUser.role === 'TRANSPORTER') &&
-    ['/dashboard', '/management/homes', '/management/tenants', '/management/agents', '/management/landlords', '/management/reports', '/management/campaigns', '/settings', '/payments', '/support', '/transporters', '/communications', '/roles-permissions', '/custom-fields', '/user-management', '/delivery-requests'].includes(location.pathname);
+  // const isManagementMode = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'LANDLORD' || currentUser.role === 'AGENT' || currentUser.role === 'SUPPORT' || currentUser.role === 'TRANSPORTER') &&
+  //   ['/dashboard', '/management/homes', '/management/tenants', '/management/agents', '/management/landlords', '/management/reports', '/management/campaigns', '/settings', '/payments', '/support', '/transporters', '/communications', '/roles-permissions', '/custom-fields', '/user-management', '/delivery-requests'].includes(location.pathname);
 
   // Derived filtered houses //
   // const filteredHouses = useMemo(() => {
@@ -403,7 +407,7 @@ const App: React.FC = () => {
               <Marketplace
                 filters={filters}
                 setFilters={setFilters}
-                filteredHouses={filteredHouses}
+                filteredHouses={filteredHouses()}
                 currentUser={currentUser}
                 handleToggleFavorite={handleToggleFavorite}
                 setSelectedHouse={setSelectedHouse}

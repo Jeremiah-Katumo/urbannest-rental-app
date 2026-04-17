@@ -9,9 +9,9 @@ interface ManagementPageProps {
   houses: House[];
   users: User[];
   campaigns: Campaign[];
-  setHouses: (houses: House[] | ((prev: House[]) => House[])) => void;
-  setUsers: (users: User[] | ((prev: User[]) => User[])) => void;
-  setCampaigns: (campaigns: Campaign[] | ((prev: Campaign[]) => Campaign[])) => void;
+  setHouses: (houses: House[]) => void;
+  setUsers: (users: User[]) => void;
+  setCampaigns: (campaigns: Campaign[]) => void;
   setIsEditingHouse: (house: House | null) => void;
   setIsEditingUser: (user: User | null) => void;
   setIsEditingCampaign: (campaign: Campaign | null) => void;
@@ -36,7 +36,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 }) => {
   let data: any[] = [];
   let title = "";
-  let onAdd = () => {};
+  let onAdd = () => { };
 
   if (type === 'HOMES') {
     data = houses.filter(h => currentUser?.role === 'ADMIN' || h.ownerId === currentUser?.id || h.agentId === currentUser?.id);
@@ -77,9 +77,9 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
 
   const handleDelete = (id: string) => {
     if (confirm(`Delete this ${type.slice(0, -1)}?`)) {
-      if (type === 'HOMES') setHouses(prev => prev.filter(h => h.id !== id));
-      else if (type === 'CAMPAIGNS') setCampaigns(prev => prev.filter(c => c.id !== id));
-      else setUsers(prev => prev.filter(u => u.id !== id));
+      if (type === 'HOMES') setHouses(houses.filter(h => h.id !== id));
+      else if (type === 'CAMPAIGNS') setCampaigns(campaigns.filter(c => c.id !== id));
+      else setUsers(users.filter(u => u.id !== id));
     }
   };
 
@@ -90,7 +90,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
   };
 
   return (
-    <ManagementTable 
+    <ManagementTable
       type={type}
       data={data}
       title={title}
