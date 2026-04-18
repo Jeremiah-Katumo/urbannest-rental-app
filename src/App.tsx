@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, JSX } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -240,6 +240,14 @@ const App: React.FC = () => {
     navigate("/");
   };
 
+  const requireAuth = (element: JSX.Element) => {
+    if (!currentUser) {
+      setAuthView('LOGIN');
+      return <Navigate to="/" state={{ from: location.pathname }} replace />;
+    }
+    return element;
+  };
+
   // CRUD  
   const handleHireTransporter = (transporterId: string) => {
     alert(`Transporter hired! They will contact you shortly at ${currentUser?.phone || 'your registered number'}.`);
@@ -265,7 +273,7 @@ const App: React.FC = () => {
       {!isManagementMode && authView === 'NONE' && (
         <Navbar
           currentRole={currentUser?.role || 'TENANT'}
-          currentUser={currentUser || { name: 'Guest', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest' } as User}
+          currentUser={{ name: 'Guest', avatar: '...' } as User}
           onRoleChange={() => { }}
         />
       )}
@@ -278,9 +286,14 @@ const App: React.FC = () => {
       )}
 
       {authView !== 'NONE' ? (
-        <AuthOverlay view={authView} onLogin={handleLogin} onNavigate={setAuthView} onClose={() => { }} />
+        <AuthOverlay view={authView} onLogin={handleLogin} onNavigate={setAuthView} onClose={() => setAuthView('NONE')} />
       ) : (
         <main className={`${isManagementMode ? 'p-12 max-w-[1400px] mx-auto' : ''}`}>
+          {/* <Navbar
+            currentRole={currentUser?.role || 'TENANT'}
+            currentUser={currentUser}
+            onRoleChange={() => { }}
+          /> */}
           <Routes>
             <Route path="/" element={
               <Marketplace
@@ -293,45 +306,47 @@ const App: React.FC = () => {
               />
             } />
             <Route path="/dashboard" element={
-              <Dashboard
-                currentUser={currentUser}
-                houses={houses}
-                payments={payments}
-                leases={leases}
-                maintenance={maintenances}
-                bookings={bookings}
-                leads={leads}
-                campaigns={campaigns}
-                transporters={transporters}
-                users={users}
-                navigate={navigate}
-              />
+              requireAuth(
+                <Dashboard
+                  currentUser={currentUser}
+                  houses={houses}
+                  payments={payments}
+                  leases={leases}
+                  maintenance={maintenances}
+                  bookings={bookings}
+                  leads={leads}
+                  campaigns={campaigns}
+                  transporters={transporters}
+                  users={users}
+                  navigate={navigate}
+                />
+              )
             } />
 
-            <Route path="/management/homes" element={<ManagementPage type="HOMES" {...managementProps} />} />
-            <Route path="/management/tenants" element={<ManagementPage type="TENANTS" {...managementProps} />} />
-            <Route path="/management/landlords" element={<ManagementPage type="LANDLORDS" {...managementProps} />} />
-            <Route path="/management/agents" element={<ManagementPage type="AGENTS" {...managementProps} />} />
-            <Route path="/management/campaigns" element={<ManagementPage type="CAMPAIGNS" {...managementProps} />} />
-            <Route path="/management/reports" element={<Reports />} />
-            <Route path="/management/transporters" element={<ManagementPage type="TRANSPORTERS" {...managementProps} />} />
-            <Route path="/user-management" element={<ManagementPage type="USERS" {...managementProps} />} />
-            <Route path="/delivery-requests" element={<ManagementPage type="DELIVERY_REQUESTS" {...managementProps} />} />
+            <Route path="/management/homes" element={requireAuth(<ManagementPage type="HOMES" {...managementProps} />)} />
+            <Route path="/management/tenants" element={requireAuth(<ManagementPage type="TENANTS" {...managementProps} />)} />
+            <Route path="/management/landlords" element={requireAuth(<ManagementPage type="LANDLORDS" {...managementProps} />)} />
+            <Route path="/management/agents" element={requireAuth(<ManagementPage type="AGENTS" {...managementProps} />)} />
+            <Route path="/management/campaigns" element={requireAuth(<ManagementPage type="CAMPAIGNS" {...managementProps} />)} />
+            <Route path="/management/reports" element={requireAuth(<Reports />)} />
+            <Route path="/management/transporters" element={requireAuth(<ManagementPage type="TRANSPORTERS" {...managementProps} />)} />
+            <Route path="/user-management" element={requireAuth(<ManagementPage type="USERS" {...managementProps} />)} />
+            <Route path="/delivery-requests" element={requireAuth(<ManagementPage type="DELIVERY_REQUESTS" {...managementProps} />)} />
 
             <Route path="/about" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><AboutUs /></div>} />
             <Route path="/contact" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><ContactUs /></div>} />
             <Route path="/settings" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Settings user={currentUser!} onLogout={handleLogout} /></div>} />
-            <Route path="/payments" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><PaymentHistory payments={payments} currentUser={currentUser!} bookings={bookings} houses={houses} onSimulatePayment={handleSimulatePayment} /></div>} />
-            <Route path="/support" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SupportCenter issues={issues} currentUser={currentUser!} onAddIssue={(data: Partial<SupportIssue>) => handleAddOrUpdateIssue(data, currentUser)} onUpdateStatus={updateIssueStatus} /></div>} />
+            <Route path="/payments" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><PaymentHistory payments={payments} currentUser={currentUser!} bookings={bookings} houses={houses} onSimulatePayment={handleSimulatePayment} /></div>)} />
+            <Route path="/support" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SupportCenter issues={issues} currentUser={currentUser!} onAddIssue={(data: Partial<SupportIssue>) => handleAddOrUpdateIssue(data, currentUser)} onUpdateStatus={updateIssueStatus} /></div>)} />
             <Route path="/transporters" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><TransporterMarket transporters={transporters} currentUser={currentUser!} onHire={handleHireTransporter} /></div>} />
-            <Route path="/wishlist" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Wishlist houses={houses} currentUser={currentUser!} onRemove={toggleFavorite} onSelect={setSelectedHouse} /></div>} />
-            <Route path="/leases" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><LeaseManager leases={leases} currentUser={currentUser!} houses={houses} onSignLease={handleSignLease} /></div>} />
-            <Route path="/communications" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><CommunicationCenter currentUser={currentUser!} announcements={announcements} onAddAnnouncement={handleAddOrUpdateAnnouncement} /></div>} />
-            <Route path="/subscriptions" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SubscriptionPlans plans={subscriptionPlans} currentUser={currentUser!} onSubscribe={handleSubscribePlan} /></div>} />
-            <Route path="/roles-permissions" element={<RolesPermissions roles={roles} permissions={permissions} onUpdateRole={(role: RoleDefinition) => handleUpdateRole(role.id, role)} onAddRole={(role: Partial<RoleDefinition>) => handleAddRole(role, currentUser)} onDeleteRole={handleDeleteRole} />} />
-            <Route path="/custom-fields" element={<CustomFieldsManager fields={customFields} onAddField={handleAddCustomField} onDeleteField={handleDeleteCustomField} />} />
+            <Route path="/wishlist" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Wishlist houses={houses} currentUser={currentUser!} onRemove={toggleFavorite} onSelect={setSelectedHouse} /></div>)} />
+            <Route path="/leases" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><LeaseManager leases={leases} currentUser={currentUser!} houses={houses} onSignLease={handleSignLease} /></div>)} />
+            <Route path="/communications" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><CommunicationCenter currentUser={currentUser!} announcements={announcements} onAddAnnouncement={handleAddOrUpdateAnnouncement} /></div>)} />
+            <Route path="/subscriptions" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SubscriptionPlans plans={subscriptionPlans} currentUser={currentUser!} onSubscribe={handleSubscribePlan} /></div>)} />
+            <Route path="/roles-permissions" element={requireAuth(<RolesPermissions roles={roles} permissions={permissions} onUpdateRole={(role: RoleDefinition) => handleUpdateRole(role.id, role)} onAddRole={(role: Partial<RoleDefinition>) => handleAddRole(role, currentUser)} onDeleteRole={handleDeleteRole} />)} />
+            <Route path="/custom-fields" element={requireAuth(<CustomFieldsManager fields={customFields} onAddField={handleAddCustomField} onDeleteField={handleDeleteCustomField} />)} />
             <Route path="/map" element={<MapFeature houses={houses} selectedHouse={null} />} />
-            <Route path="/my-bookings" element={<MyBookings bookings={bookings} currentUser={currentUser} houses={houses} />} />
+            <Route path="/my-bookings" element={requireAuth(<MyBookings bookings={bookings} currentUser={currentUser} houses={houses} />)} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
