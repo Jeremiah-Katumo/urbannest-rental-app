@@ -21,6 +21,7 @@ const Marketplace: React.FC<MarketplaceProps> = ({
   handleToggleFavorite,
   setSelectedHouse
 }) => {
+
   return (
     <div className="w-full px-4 sm:px-6 lg:px-12 py-12 animate-in fade-in duration-500">
       <div className="mb-12">

@@ -2,40 +2,59 @@ import { create } from "zustand";
 import { Lease } from "../types";
 import { MOCK_LEASES } from "../constants";
 
-type Store = {
+type LeaseState = {
     leases: Lease[];
     editingLease: Lease | null;
 
-    setEditingLease: (l: Lease | null) => void;
+    setLeases: (fn: (prev: Lease[]) => Lease[]) => void;
+    setEditingLease: (lease: Lease | null) => void;
 
     addOrUpdateLease: (data: Lease) => void;
     updateLease: (id: string, data: Partial<Lease>) => void;
+
+    updateLeaseStatus: (
+        id: string,
+        status: Lease["status"]
+    ) => void;
+
     signLease: (id: string) => void;
+
     deleteLease: (id: string) => void;
 };
 
-export const useLeaseStore = create<Store>((set, get) => ({
+export const useLeaseStore = create<LeaseState>((set, get) => ({
     leases: MOCK_LEASES,
     editingLease: null,
 
-    setEditingLease: (l) => set({ editingLease: l }),
+    // ✅ functional setter
+    setLeases: (fn) =>
+        set((state) => ({
+            leases: fn(state.leases),
+        })),
 
+    setEditingLease: (lease) =>
+        set({ editingLease: lease }),
+
+    // ✅ ADD / EDIT
     addOrUpdateLease: (data) => {
-        const editing = get().editingLease;
+        const { editingLease } = get();
 
-        if (editing?.id) {
+        if (editingLease?.id) {
             set((state) => ({
                 leases: state.leases.map((l) =>
-                    l.id === editing.id ? { ...l, ...data } : l
+                    l.id === editingLease.id ? { ...l, ...data } : l
                 ),
+                editingLease: null,
             }));
         } else {
-            set((state) => ({ leases: [data, ...state.leases] }));
+            set((state) => ({
+                leases: [data, ...state.leases],
+                editingLease: null,
+            }));
         }
-
-        set({ editingLease: null });
     },
 
+    // ✅ UPDATE
     updateLease: (id, data) =>
         set((state) => ({
             leases: state.leases.map((l) =>
@@ -43,10 +62,25 @@ export const useLeaseStore = create<Store>((set, get) => ({
             ),
         })),
 
-    signLease: (id) =>
+    // ✅ UPDATE STATUS
+    updateLeaseStatus: (id, status) =>
         set((state) => ({
             leases: state.leases.map((l) =>
                 l.id === id
+                    ? {
+                        ...l,
+                        status,
+                        signedAt: new Date().toISOString(),
+                    }
+                    : l
+            ),
+        })),
+
+    // ✅ SIGN (explicit action)
+    signLease: (leaseId) =>
+        set((state) => ({
+            leases: state.leases.map((l) =>
+                l.id === leaseId
                     ? {
                         ...l,
                         status: "SIGNED",
@@ -56,6 +90,7 @@ export const useLeaseStore = create<Store>((set, get) => ({
             ),
         })),
 
+    // ✅ DELETE
     deleteLease: (id) =>
         set((state) => ({
             leases: state.leases.filter((l) => l.id !== id),

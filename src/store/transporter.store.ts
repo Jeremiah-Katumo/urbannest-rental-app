@@ -1,68 +1,108 @@
 import { create } from "zustand";
 import { Transporter } from "../types";
 import { MOCK_TRANSPORTERS } from "../constants";
+import { useAuthStore } from "./auth.store";
 
-type Store = {
+type TransporterState = {
     transporters: Transporter[];
+    editingTransporter: Transporter | null;
 
-    addOrUpdate: (data: Partial<Transporter>) => void;
-    update: (id: string, data: Partial<Transporter>) => void;
-    updateStatus: (id: string, status: Transporter["status"]) => void;
-    delete: (id: string) => void;
+    setTransporters: (
+        fn: (prev: Transporter[]) => Transporter[]
+    ) => void;
+
+    setEditingTransporter: (transporter: Transporter | null) => void;
+
+    addOrUpdateTransporter: (data: Partial<Transporter>) => void;
+    updateTransporter: (
+        id: string,
+        data: Partial<Transporter>
+    ) => void;
+
+    updateTransporterStatus: (
+        id: string,
+        status: Transporter["status"]
+    ) => void;
+
+    deleteTransporter: (id: string) => void;
 };
 
-export const useTransporterStore = create<Store>((set) => ({
+export const useTransporterStore = create<TransporterState>((set, get) => ({
     transporters: MOCK_TRANSPORTERS,
+    editingTransporter: null,
 
-    addOrUpdate: (data) =>
-        set((state) => {
-            const exists = state.transporters.find(
-                (t) => t.id === (data as any).id
-            );
+    // ✅ functional setter
+    setTransporters: (fn) =>
+        set((state) => ({
+            transporters: fn(state.transporters),
+        })),
 
-            if (exists) {
-                return {
-                    transporters: state.transporters.map((t) =>
-                        t.id === (data as any).id ? { ...t, ...data } : t
-                    ),
-                };
-            }
+    setEditingTransporter: (transporter) =>
+        set({ editingTransporter: transporter }),
 
-            return {
-                transporters: [
-                    {
-                        id: crypto.randomUUID(),
-                        name: data.name || "New",
-                        email: data.email || "",
-                        phone: data.phone || "",
-                        vehicleType: data.vehicleType || "",
-                        basePrice: data.basePrice || 1000,
-                        pricePerKm: data.pricePerKm || 400,
-                        rating: 0,
-                        status: "AVAILABLE",
-                        avatar: "",
-                    },
-                    ...state.transporters,
-                ],
+    // ✅ ADD / EDIT
+    addOrUpdateTransporter: (data) => {
+        const { editingTransporter } = get();
+        const { currentUser } = useAuthStore.getState();
+
+        if (editingTransporter?.id) {
+            set((state) => ({
+                transporters: state.transporters.map((t) =>
+                    t.id === editingTransporter.id
+                        ? { ...t, ...data }
+                        : t
+                ),
+                editingTransporter: null,
+            }));
+        } else {
+            const newTransporter: Transporter = {
+                id: crypto.randomUUID(),
+                name: data.name || "New Transporter",
+                email: data.email || "",
+                phone: data.phone || "",
+                vehicleType: data.vehicleType || "",
+                basePrice: data.basePrice || 1000,
+                pricePerKm: data.pricePerKm || 450,
+                rating: Math.random(),
+                status: "AVAILABLE",
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${data.email || "new"
+                    }`,
             };
-        }),
 
-    update: (id, data) =>
+            set((state) => ({
+                transporters: [newTransporter, ...state.transporters],
+                editingTransporter: null,
+            }));
+        }
+
+        // ✅ Side effect (kept same as your logic)
+        alert(
+            `Transporter hired! They will contact you shortly at ${currentUser?.phone || "your registered number"
+            }.`
+        );
+    },
+
+    // ✅ UPDATE
+    updateTransporter: (id, data) =>
         set((state) => ({
             transporters: state.transporters.map((t) =>
                 t.id === id ? { ...t, ...data } : t
             ),
         })),
 
-    updateStatus: (id, status) =>
+    // ✅ UPDATE STATUS
+    updateTransporterStatus: (id, status) =>
         set((state) => ({
             transporters: state.transporters.map((t) =>
                 t.id === id ? { ...t, status } : t
             ),
         })),
 
-    delete: (id) =>
+    // ✅ DELETE
+    deleteTransporter: (id) =>
         set((state) => ({
-            transporters: state.transporters.filter((t) => t.id !== id),
+            transporters: state.transporters.filter(
+                (t) => t.id !== id
+            ),
         })),
 }));

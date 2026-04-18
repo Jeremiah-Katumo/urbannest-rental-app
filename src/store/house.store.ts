@@ -11,7 +11,7 @@ type HouseState = {
 
     filteredHouses: () => House[];
 
-    setHouses: (houses: House[]) => void;
+    setHouses: (fn: (prev: House[]) => House[]) => void;
     setFilters: (filters: Partial<SearchFilters>) => void;
 
     setSelectedHouse: (house: House | null) => void;
@@ -45,7 +45,10 @@ export const useHouseStore = create<HouseState>((set, get) => ({
     selectedHouse: null,
     editingHouse: null,
 
-    setHouses: (houses) => set({ houses }),
+    setHouses: (fn) =>
+        set((state) => ({
+            houses: fn(state.houses),
+        })),
 
     setFilters: (filters) =>
         set((state) => ({

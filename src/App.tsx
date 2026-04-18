@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -29,12 +29,27 @@ import MyBookings from './pages/MyBookings';
 import Reports from './pages/Reports';
 import ManagementPage from './pages/Management';
 
-import { MOCK_HOUSES, MOCK_USERS, MOCK_TRANSPORTERS, MOCK_ISSUES, MOCK_PAYMENTS, MOCK_LEASES, MOCK_ANNOUNCEMENTS, MOCK_SUBSCRIPTION_PLANS, MOCK_PERMISSIONS, MOCK_ROLES, MOCK_CUSTOM_FIELDS } from './constants';
-import { House, UserRole, Booking, SearchFilters, User, AuthPage, Campaign, Payment, SupportIssue, Transporter, Lease, Announcement, SubscriptionPlan, RoleDefinition, Permission, CustomField, Lead, MaintenanceRequest } from './types';
+import { MOCK_USERS } from './constants';
+import { House, RoleDefinition, SupportIssue, User, UserRole } from './types';
 import { MessageSquare, X } from 'lucide-react';
 import { useAuthStore } from './store/auth.store';
 import { useHouseStore } from './store/house.store';
 import { useAppStore } from './store/app.store';
+import { useCampaignStore } from './store/campaign.store';
+import { useBookingStore } from './store/booking.store';
+import { useSupportIssueStore } from './store/support.store';
+import { useLeaseStore } from './store/lease.store';
+import { useMaintenanceRequestStore } from './store/maintenanceRequest.store';
+import { useUserStore } from './store/user.store';
+import { useTransporterStore } from './store/transporter.store';
+import { usePaymentStore } from './store/payment.store';
+import { usePermissionStore } from './store/permission.store';
+import { useAnnouncementStore } from './store/announcement.store';
+import { useChatStore } from './store/chat.store';
+import { useSubscriptionPlanStore } from './store/subscriptionPlan.store';
+import { useRoleStore } from './store/role.store';
+import { useCustomFieldStore } from './store/customField.store';
+import { useLeadStore } from './store/lead.store';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -50,7 +65,20 @@ const App: React.FC = () => {
   const setCurrentUser = useAuthStore((s) => s.setCurrentUser);
   const toggleFavorite = useAuthStore((s) => s.toggleFavorite);
 
+  // AppStore
   const isManagementMode = useAppStore((s) => s.isManagementMode(location.pathname, currentUser?.role));
+
+  const users = useUserStore(s => s.users);
+  const isEditingUser = useUserStore(s => s.editingUser);
+  const selectedUser = useUserStore(s => s.selectedUser);
+  const selectedUserDetail = useUserStore(s => s.selectedUserDetail);
+  const setUsers = useUserStore(s => s.setUsers);
+  const setIsEditingUser = useUserStore(s => s.setEditingUser);
+  const setSelectedUser = useUserStore(s => s.setSelectedUser);
+  const setSelectedUserDetail = useUserStore(s => s.setSelectedUserDetail);
+  const handleAddOrUpdateUser = useUserStore(s => s.addOrUpdateUser);
+  const updateUser = useUserStore(s => s.updateUser);
+  const deleteUse = useUserStore(s => s.deleteUser);
 
   // HouseStore
   const houses = useHouseStore((hs) => hs.houses);
@@ -63,38 +91,133 @@ const App: React.FC = () => {
   const setFilters = useHouseStore((hs) => hs.setFilters);
   const setSelectedHouse = useHouseStore((hs) => hs.setSelectedHouse);
   const setIsEditingHouse = useHouseStore((hs) => hs.setEditingHouse);
-  const addOrUpdateHouse = useHouseStore((hs) => hs.addOrUpdateHouse);
+  const handleAddOrUpdateHouse = useHouseStore((hs) => hs.addOrUpdateHouse);
   const updateHouse = useHouseStore((hs) => hs.updateHouse);
   const deleteHouse = useHouseStore((hs) => hs.deleteHouse);
   // const toggleFavorite = useHouseStore((hs) => hs.toggleFavorite);
 
+  // CampaignStore
+  const campaigns = useCampaignStore((s) => s.campaigns);
+  const isEditingCampaign = useCampaignStore(s => s.editingCampaign);
+  const setCampaigns = useCampaignStore((s) => s.setCampaigns);
+  const setIsEditingCampaign = useCampaignStore((s) => s.setEditingCampaign);
+  const addOrUpdateCampaign = useCampaignStore((s) => s.addOrUpdateCampaign);
+  const updateCampaign = useCampaignStore((s) => s.updateCampaign);
+  const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
+
+  // BookingStore
+  const bookings = useBookingStore((s) => s.bookings);
+  const setBookings = useBookingStore((s) => s.setBookings);
+  const handleBookingSubmit = useBookingStore((s) => s.addBooking);
+  const updateBookingStatus = useBookingStore((s) => s.updateBookingStatus)
+  const deleteBooking = useBookingStore((s) => s.deleteBooking);
+
+  // SUpportIssueStore
+  const issues = useSupportIssueStore((s) => s.issues);
+  const isEditingIssue = useSupportIssueStore((s) => s.editingIssue);
+  const setIssues = useSupportIssueStore((s) => s.setIssues);
+  const setIsEditingIssue = useSupportIssueStore((s) => s.setEditingIssue);
+  const handleAddOrUpdateIssue = useSupportIssueStore((s) => s.addOrUpdateIssue);
+  const updateIssue = useSupportIssueStore((s) => s.updateIssue);
+  const updateIssueStatus = useSupportIssueStore((s) => s.updateIssueStatus);
+  const deleteIssue = useSupportIssueStore((s) => s.deleteIssue);
+
+  const leases = useLeaseStore((s) => s.leases);
+  const isEditingLease = useLeaseStore((s) => s.editingLease);
+  const setLeases = useLeaseStore((s) => s.setLeases);
+  const setEditingLease = useLeaseStore((s) => s.setEditingLease);
+  const handleAddOrUpdateLease = useLeaseStore((s) => s.addOrUpdateLease);
+  const updateLease = useLeaseStore((s) => s.updateLease);
+  const updateLeaseStatus = useLeaseStore((s) => s.updateLeaseStatus);
+  const handleSignLease = useLeaseStore(s => s.signLease);
+  const deleteLease = useLeaseStore((s) => s.deleteLease);
+
+  const requests = useMaintenanceRequestStore(s => s.requests);
+  const isEditingRequests = useMaintenanceRequestStore(s => s.editingRequest);
+  const setRequests = useMaintenanceRequestStore(s => s.setRequests);
+  const setIsEditingRequest = useMaintenanceRequestStore(s => s.setEditingRequest);
+  const handleAddOrUpdateRequest = useMaintenanceRequestStore(s => s.addOrUpdateRequest);
+  const updateRequest = useMaintenanceRequestStore(s => s.updateRequest);
+  const handleUpdateRequestStatus = useMaintenanceRequestStore(s => s.updateStatus);
+  const deleteRequest = useMaintenanceRequestStore(s => s.deleteRequest);
+
+  const transporters = useTransporterStore(s => s.transporters);
+  const isEditingTransporter = useTransporterStore(s => s.editingTransporter);
+  const setTransporters = useTransporterStore(s => s.setTransporters);
+  const setIsEditingTransporter = useTransporterStore(s => s.setEditingTransporter);
+  const handleAddOrUpdateTransporter = useTransporterStore(s => s.addOrUpdateTransporter);
+  const updateTransporter = useTransporterStore(s => s.updateTransporter);
+  const updateTransporterStatus = useTransporterStore(s => s.updateTransporter);
+  const deleteTransporter = useTransporterStore(s => s.deleteTransporter);
+
+  const payments = usePaymentStore(s => s.payments);
+  const setPayments = usePaymentStore(s => s.setPayments);
+  const handleSimulatePayment = usePaymentStore(s => s.simulatePayment);
+
+  const permissions = usePermissionStore(s => s.permissions);
+  const setPermissions = usePermissionStore(s => s.setPermissions);
+  const handleAddPermission = usePermissionStore(s => s.addPermission);
+  const updatePermission = usePermissionStore(s => s.updatePermission)
+  const deletePermission = usePermissionStore(s => s.deletePermission);
+
+  const announcements = useAnnouncementStore(s => s.announcements);
+  const isEditingAnnouncement = useAnnouncementStore(s => s.editingAnnouncement);
+  const setAnnouncements = useAnnouncementStore(s => s.setAnnouncements);
+  const setEditingAnnouncement = useAnnouncementStore(s => s.setEditingAnnouncement);
+  const handleAddOrUpdateAnnouncement = useAnnouncementStore(s => s.addOrUpdateAnnouncement);
+  const updateAnnouncement = useAnnouncementStore(s => s.updateAnnouncement);
+  const deleteAnnouncement = useAnnouncementStore(s => s.deleteAnnouncement);
+
+  const conversations = useChatStore(s => s.conversations);
+  const activeConversationId = useChatStore(s => s.activeConversationId);
+  const activeChat = useChatStore(s => s.activeChat);
+  const setConversations = useChatStore(s => s.setConversations);
+  const setActiveChat = useChatStore(s => s.setActiveChat);
+  const handleSendMessage = useChatStore(s => s.sendMessage);
+  const createConversation = useChatStore(s => s.createConversation);
+
+  const subscriptionPlans = useSubscriptionPlanStore(s => s.plans);
+  const isEditingSubscriptionPlan = useSubscriptionPlanStore(s => s.editingPlan);
+  const activeSubscriptionPlan = useSubscriptionPlanStore(s => s.activatePlan);
+  const setSubscriptionPlans = useSubscriptionPlanStore(s => s.setPlans);
+  const handleAddOrUpdateSubscriptionPlan = useSubscriptionPlanStore(s => s.addOrUpdatePlan);
+  const handleSubscribePlan = useSubscriptionPlanStore(s => s.subscribePlan);
+  const updatePlan = useSubscriptionPlanStore(s => s.updatePlan);
+  const deletePlan = useSubscriptionPlanStore(s => s.deletePlan);
+  const activatePlan = useSubscriptionPlanStore(s => s.activatePlan);
+  const toggleFeaturePlan = useSubscriptionPlanStore(s => s.toggleFeature);
+
+  const roles = useRoleStore(s => s.roles);
+  const isEditingRole = useRoleStore(s => s.editingRole);
+  const setRoles = useRoleStore(s => s.setRoles);
+  const handleAddRole = useRoleStore(s => s.addRole);
+  const handleUpdateRole = useRoleStore(s => s.updateRole);
+  const handleDeleteRole = useRoleStore(s => s.deleteRole)
+
+  const customFields = useCustomFieldStore(s => s.fields);
+  const isEditingCUstomField = useCustomFieldStore(s => s.editingField);
+  const setCustomFields = useCustomFieldStore(s => s.setFields);
+  const handleAddCustomField = useCustomFieldStore(s => s.addField);
+  const handleUpdateCustomField = useCustomFieldStore(s => s.updateField);
+  const handleDeleteCustomField = useCustomFieldStore(s => s.deleteField)
+
+  const leads = useLeadStore(s => s.leads)
+  const setLeads = useLeadStore(s => s.setLeads);
+  const handleAddLead = useLeadStore(s => s.addLead);
+  const handleUpdateLead = useLeadStore(s => s.updateLead);
+  const handleDeleteLead = useLeadStore(s => s.deleteLead);
+
+  const maintenances = useMaintenanceRequestStore(s => s.requests);
+  const isEditingMaintenances = useMaintenanceRequestStore(s => s.editingRequest)
+  const setMaintenances = useMaintenanceRequestStore(s => s.setRequests);
+  const setIsEditingMaintenance = useMaintenanceRequestStore(s => s.setEditingRequest);
+  const handleAddOrUpdateMaintenance = useMaintenanceRequestStore(s => s.addOrUpdateRequest);
+  const handleUpdateMaintenance = useMaintenanceRequestStore(s => s.updateRequest);
+  const handleUpdateMaintenanceStatus = useMaintenanceRequestStore(s => s.updateStatus);
+  const handleDeleteMaintenance = useMaintenanceRequestStore(s => s.deleteRequest);
+
   // App State
-  // const [houses, setHouses] = useState<House[]>(MOCK_HOUSES);
-  const [bookings, setBookings] = useState<Booking[]>([]);
-  const [users, setUsers] = useState<User[]>(MOCK_USERS);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([
-    { id: 'c1', name: 'Summer Hot Deals', description: 'Promoting waterfront properties', status: 'ACTIVE', budget: 5000, targetAudience: 'Families', startDate: '2024-06-01' },
-    { id: 'c2', name: 'Student Studios', description: 'Low cost housing for university students', status: 'PAUSED', budget: 1200, targetAudience: 'Students', startDate: '2024-08-15' }
-  ]);
-  const [payments, setPayments] = useState<Payment[]>(MOCK_PAYMENTS);
-  const [issues, setIssues] = useState<SupportIssue[]>(MOCK_ISSUES);
-  const [transporters, setTransporters] = useState<Transporter[]>(MOCK_TRANSPORTERS);
-  const [leases, setLeases] = useState<Lease[]>(MOCK_LEASES);
-  const [announcements, setAnnouncements] = useState<Announcement[]>(MOCK_ANNOUNCEMENTS);
-  const [activeChat, setActiveChat] = useState<User | null>(null);
-  const [selectedUserDetail, setSelectedUserDetail] = useState<User | null>(null);
-  const [subscriptionPlans] = useState<SubscriptionPlan[]>(MOCK_SUBSCRIPTION_PLANS);
-  const [roles, setRoles] = useState<RoleDefinition[]>(MOCK_ROLES);
-  const [permissions] = useState<Permission[]>(MOCK_PERMISSIONS);
-  const [customFields, setCustomFields] = useState<CustomField[]>(MOCK_CUSTOM_FIELDS);
   const [selectedHouseView, setSelectedHouseView] = useState<House | null>(null);
-  const [leads] = useState<Lead[]>([
-    { id: 'l1', houseId: 'h1', name: 'Alice Smith', email: 'alice@example.com', phone: '123456', message: 'Interested in viewing.', status: 'NEW', createdAt: '2024-04-11T10:00:00Z' },
-    { id: 'l2', houseId: 'h2', name: 'Bob Brown', email: 'bob@example.com', phone: '654321', message: 'Is the price negotiable?', status: 'QUALIFIED', createdAt: '2024-04-10T15:00:00Z' }
-  ]);
-  const [maintenance] = useState<MaintenanceRequest[]>([
-    { id: 'm1', houseId: 'h1', tenantId: 'u1', title: 'Leaking Sink', description: 'The kitchen sink is leaking.', priority: 'MEDIUM', status: 'OPEN', createdAt: '2024-04-09T08:00:00Z' }
-  ]);
 
   // Guardrail for Business Subscription
   useEffect(() => {
@@ -105,37 +228,6 @@ const App: React.FC = () => {
       }
     }
   }, [currentUser, location.pathname, navigate]);
-
-  // Modal/Form States
-  // const [selectedHouse, setSelectedHouse] = useState<House | null>(null);
-  // const [isEditingHouse, setIsEditingHouse] = useState<House | null>(null);
-  const [isEditingUser, setIsEditingUser] = useState<User | null>(null);
-  const [isEditingCampaign, setIsEditingCampaign] = useState<Campaign | null>(null);
-
-  // Filter States //
-  // const [filters, setFilters] = useState<SearchFilters>({
-  //   location: '',
-  //   minPrice: '',
-  //   maxPrice: '',
-  //   type: 'All',
-  //   bedrooms: '',
-  //   amenities: []
-  // });
-  //
-  // const isManagementMode = currentUser && (currentUser.role === 'ADMIN' || currentUser.role === 'LANDLORD' || currentUser.role === 'AGENT' || currentUser.role === 'SUPPORT' || currentUser.role === 'TRANSPORTER') &&
-  //   ['/dashboard', '/management/homes', '/management/tenants', '/management/agents', '/management/landlords', '/management/reports', '/management/campaigns', '/settings', '/payments', '/support', '/transporters', '/communications', '/roles-permissions', '/custom-fields', '/user-management', '/delivery-requests'].includes(location.pathname);
-
-  // Derived filtered houses //
-  // const filteredHouses = useMemo(() => {
-  //   return houses.filter(h => {
-  //     const matchLoc = h.location.toLowerCase().includes(filters.location.toLowerCase());
-  //     const matchMin = filters.minPrice === '' || h.price >= (filters.minPrice as number);
-  //     const matchMax = filters.maxPrice === '' || h.price <= (filters.maxPrice as number);
-  //     const matchType = filters.type === 'All' || h.type === filters.type;
-  //     const matchBeds = filters.bedrooms === '' || h.bedrooms === Number(filters.bedrooms);
-  //     return matchLoc && matchMin && matchMax && matchType && matchBeds;
-  //   });
-  // }, [houses, filters]);
 
   // Handlers //
   const handleLogin = (email: string, role: UserRole) => {
@@ -148,222 +240,9 @@ const App: React.FC = () => {
     navigate("/");
   };
 
-  // CRUD Houses //
-  // const saveHouse = (houseData: Partial<House>) => {
-  //   if (isEditingHouse?.id) {
-  //     setHouses(prev => prev.map(h => h.id === isEditingHouse.id ? { ...h, ...houseData } as House : h));
-  //   } else {
-  //     const newHouse: House = {
-  //       id: Math.random().toString(36).substr(2, 9),
-  //       title: houseData.title || 'New Property',
-  //       description: houseData.description || '',
-  //       price: houseData.price || 0,
-  //       location: houseData.location || 'Unknown',
-  //       type: houseData.type || 'Apartment',
-  //       bedrooms: houseData.bedrooms || 1,
-  //       bathrooms: houseData.bathrooms || 1,
-  //       images: ['https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=800&q=80'],
-  //       isAvailable: true,
-  //       amenities: [],
-  //       ownerId: currentUser?.id || 'admin'
-  //     };
-  //     setHouses([newHouse, ...houses]);
-  //   }
-  //   setIsEditingHouse(null);
-  // };
-
-  // CRUD Users //
-  const saveUser = (userData: Partial<User>) => {
-    if (isEditingUser?.id) {
-      setUsers(prev => prev.map(u => u.id === isEditingUser.id ? { ...u, ...userData } as User : u));
-    } else {
-      const newUser: User = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: userData.name || 'New User',
-        email: userData.email || '',
-        role: userData.role || 'TENANT',
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${userData.email || 'new'}`,
-        joinedDate: new Date().toISOString().split('T')[0],
-        status: 'ACTIVE'
-      };
-      setUsers([...users, newUser]);
-    }
-    setIsEditingUser(null);
-  };
-
-  // CRUD Campaigns //
-  const saveCampaign = (campaignData: Partial<Campaign>) => {
-    if (isEditingCampaign?.id) {
-      setCampaigns(prev => prev.map(c => c.id === isEditingCampaign.id ? { ...c, ...campaignData } as Campaign : c));
-    } else {
-      const newCampaign: Campaign = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: campaignData.name || 'New Campaign',
-        description: campaignData.description || '',
-        status: 'ACTIVE',
-        budget: campaignData.budget || 0,
-        targetAudience: campaignData.targetAudience || 'All',
-        startDate: new Date().toISOString().split('T')[0]
-      };
-      setCampaigns([...campaigns, newCampaign]);
-    }
-    setIsEditingCampaign(null);
-  };
-  //
-  const handleBookingSubmit = (startDate: string, endDate: string) => {
-    if (!selectedHouse || !currentUser) return;
-    const newBooking: Booking = {
-      id: Math.random().toString(36).substr(2, 9),
-      houseId: selectedHouse.id,
-      tenantId: currentUser.id,
-      status: 'PENDING',
-      startDate,
-      endDate,
-      totalPrice: selectedHouse.price,
-      createdAt: new Date().toISOString()
-    };
-    setBookings([newBooking, ...bookings]);
-    setSelectedHouse(null);
-    navigate('/my-bookings');
-  };
-  //
-  const updateBookingStatus = (bookingId: string, status: Booking['status']) => {
-    setBookings(prev => prev.map(b => b.id === bookingId ? { ...b, status } : b));
-    if (status === 'CONFIRMED') {
-    const booking = bookings.find(b => b.id === bookingId);
-    if (booking) {
-      setHouses((prev: House[]) => prev.map((h: House) => h.id === booking.houseId ? { ...h, isAvailable: false } : h));
-        // Create a draft lease automatically
-        const house = houses.find(h => h.id === booking.houseId);
-        const newLease: Lease = {
-          id: Math.random().toString(36).substr(2, 9),
-          houseId: booking.houseId,
-          tenantId: booking.tenantId,
-          landlordId: house?.ownerId || 'admin',
-          status: 'DRAFT',
-          startDate: booking.startDate,
-          endDate: booking.endDate,
-          rentAmount: house?.price || 0,
-          depositAmount: house?.price || 0,
-          documentUrl: '#'
-        };
-        setLeases([newLease, ...leases]);
-      }
-    }
-  };
-  //
-  const handleAddIssue = (issueData: Partial<SupportIssue>) => {
-    const newIssue: SupportIssue = {
-      id: Math.random().toString(36).substr(2, 9),
-      userId: currentUser?.id || 'guest',
-      subject: issueData.subject || 'New Issue',
-      description: issueData.description || '',
-      status: 'OPEN',
-      priority: issueData.priority || 'MEDIUM',
-      category: issueData.category || 'OTHER',
-      createdAt: new Date().toISOString()
-    };
-    setIssues([newIssue, ...issues]);
-  };
-  //
-  const handleUpdateIssueStatus = (issueId: string, status: SupportIssue['status']) => {
-    setIssues(prev => prev.map(i => i.id === issueId ? { ...i, status } : i));
-  };
-  //
-  const handleSignLease = (leaseId: string) => {
-    setLeases(prev => prev.map(l => l.id === leaseId ? { ...l, status: 'SIGNED', signedAt: new Date().toISOString() } : l));
-  };
-  //
+  // CRUD  
   const handleHireTransporter = (transporterId: string) => {
     alert(`Transporter hired! They will contact you shortly at ${currentUser?.phone || 'your registered number'}.`);
-  };
-
-  const handleSimulatePayment = (bookingId: string, amount: number) => {
-    const newPayment: Payment = {
-      id: Math.random().toString(36).substr(2, 9),
-      bookingId,
-      tenantId: currentUser?.id || 'guest',
-      amount,
-      status: 'COMPLETED',
-      method: 'MPESA',
-      type: 'RENT',
-      date: new Date().toISOString()
-    };
-    setPayments([newPayment, ...payments]);
-    alert("M-Pesa Payment Successful! Receipt generated.");
-  };
-  //
-  const handleToggleFavorite = (houseId: string) => {
-    toggleFavorite(houseId);
-  };
-  //
-  const handleAddAnnouncement = (announcementData: Partial<Announcement>) => {
-    const newAnnouncement: Announcement = {
-      id: Math.random().toString(36).substr(2, 9),
-      senderId: currentUser?.id || 'admin',
-      targetRoles: announcementData.targetRoles || ['TENANT'],
-      title: announcementData.title || 'New Announcement',
-      content: announcementData.content || '',
-      timestamp: new Date().toISOString(),
-      priority: announcementData.priority || 'NORMAL'
-    };
-    setAnnouncements([newAnnouncement, ...announcements]);
-  };
-  //
-  const handleSubscribe = (plan: SubscriptionPlan) => {
-    if (!currentUser) return;
-
-    const updatedUser: User = {
-      ...currentUser,
-      role: plan.role,
-      isSubscribed: true,
-      subscriptionPlanId: plan.id,
-      subscriptionExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
-    };
-
-    setCurrentUser(updatedUser);
-    setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
-    navigate('/dashboard');
-    alert(`Successfully subscribed to ${plan.name}! You now have access to ${plan.role} features.`);
-  };
-  //
-  const handleUpdateRole = (role: RoleDefinition) => {
-    setRoles(prev => prev.map(r => r.id === role.id ? role : r));
-  };
-  //
-  const handleAddRole = (roleData: Partial<RoleDefinition>) => {
-    const newRole: RoleDefinition = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: roleData.name || 'New Role',
-      role: roleData.role || 'TENANT',
-      permissions: roleData.permissions || []
-    };
-    setRoles([...roles, newRole]);
-  };
-  //
-  const handleDeleteRole = (roleId: string) => {
-    if (confirm('Are you sure you want to delete this role?')) {
-      setRoles(prev => prev.filter(r => r.id !== roleId));
-    }
-  };
-  //
-  const handleAddCustomField = (fieldData: Partial<CustomField>) => {
-    const newField: CustomField = {
-      id: Math.random().toString(36).substr(2, 9),
-      name: fieldData.name || 'custom_field',
-      label: fieldData.label || 'Custom Field',
-      type: fieldData.type || 'text',
-      entity: fieldData.entity || 'HOUSE',
-      options: fieldData.options,
-      defaultValue: fieldData.defaultValue
-    };
-    setCustomFields([...customFields, newField]);
-  };
-
-  const handleDeleteCustomField = (fieldId: string) => {
-    if (confirm('Are you sure you want to delete this custom field?')) {
-      setCustomFields(prev => prev.filter(f => f.id !== fieldId));
-    }
   };
 
   const managementProps = {
@@ -409,7 +288,7 @@ const App: React.FC = () => {
                 setFilters={setFilters}
                 filteredHouses={filteredHouses()}
                 currentUser={currentUser}
-                handleToggleFavorite={handleToggleFavorite}
+                handleToggleFavorite={toggleFavorite}
                 setSelectedHouse={setSelectedHouse}
               />
             } />
@@ -419,7 +298,7 @@ const App: React.FC = () => {
                 houses={houses}
                 payments={payments}
                 leases={leases}
-                maintenance={maintenance}
+                maintenance={maintenances}
                 bookings={bookings}
                 leads={leads}
                 campaigns={campaigns}
@@ -443,17 +322,13 @@ const App: React.FC = () => {
             <Route path="/contact" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><ContactUs /></div>} />
             <Route path="/settings" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Settings user={currentUser!} onLogout={handleLogout} /></div>} />
             <Route path="/payments" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><PaymentHistory payments={payments} currentUser={currentUser!} bookings={bookings} houses={houses} onSimulatePayment={handleSimulatePayment} /></div>} />
-            <Route path="/support" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SupportCenter issues={issues} currentUser={currentUser!} onAddIssue={handleAddIssue} onUpdateStatus={handleUpdateIssueStatus} /></div>} />
-            <Route path="/transporters" element={
-              currentUser?.role === 'ADMIN'
-                ? <ManagementPage type="TRANSPORTERS" {...managementProps} />
-                : <div className="w-full px-4 sm:px-6 lg:px-12 py-12"><TransporterMarket transporters={transporters} currentUser={currentUser!} onHire={handleHireTransporter} /></div>
-            } />
-            <Route path="/wishlist" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Wishlist houses={houses} currentUser={currentUser!} onRemove={handleToggleFavorite} onSelect={setSelectedHouse} /></div>} />
+            <Route path="/support" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SupportCenter issues={issues} currentUser={currentUser!} onAddIssue={(data: Partial<SupportIssue>) => handleAddOrUpdateIssue(data, currentUser)} onUpdateStatus={updateIssueStatus} /></div>} />
+            <Route path="/transporters" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><TransporterMarket transporters={transporters} currentUser={currentUser!} onHire={handleHireTransporter} /></div>} />
+            <Route path="/wishlist" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><Wishlist houses={houses} currentUser={currentUser!} onRemove={toggleFavorite} onSelect={setSelectedHouse} /></div>} />
             <Route path="/leases" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><LeaseManager leases={leases} currentUser={currentUser!} houses={houses} onSignLease={handleSignLease} /></div>} />
-            <Route path="/communications" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><CommunicationCenter currentUser={currentUser!} announcements={announcements} onAddAnnouncement={handleAddAnnouncement} /></div>} />
-            <Route path="/subscriptions" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SubscriptionPlans plans={subscriptionPlans} currentUser={currentUser!} onSubscribe={handleSubscribe} /></div>} />
-            <Route path="/roles-permissions" element={<RolesPermissions roles={roles} permissions={permissions} onUpdateRole={handleUpdateRole} onAddRole={handleAddRole} onDeleteRole={handleDeleteRole} />} />
+            <Route path="/communications" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><CommunicationCenter currentUser={currentUser!} announcements={announcements} onAddAnnouncement={handleAddOrUpdateAnnouncement} /></div>} />
+            <Route path="/subscriptions" element={<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SubscriptionPlans plans={subscriptionPlans} currentUser={currentUser!} onSubscribe={handleSubscribePlan} /></div>} />
+            <Route path="/roles-permissions" element={<RolesPermissions roles={roles} permissions={permissions} onUpdateRole={(role: RoleDefinition) => handleUpdateRole(role.id, role)} onAddRole={(role: Partial<RoleDefinition>) => handleAddRole(role, currentUser)} onDeleteRole={handleDeleteRole} />} />
             <Route path="/custom-fields" element={<CustomFieldsManager fields={customFields} onAddField={handleAddCustomField} onDeleteField={handleDeleteCustomField} />} />
             <Route path="/map" element={<MapFeature houses={houses} selectedHouse={null} />} />
             <Route path="/my-bookings" element={<MyBookings bookings={bookings} currentUser={currentUser} houses={houses} />} />
@@ -463,7 +338,20 @@ const App: React.FC = () => {
       )}
 
       {selectedHouse && currentUser && (
-        <BookingModal house={selectedHouse} user={currentUser} onClose={() => setSelectedHouse(null)} onSubmit={handleBookingSubmit} />
+        <BookingModal house={selectedHouse} user={currentUser} onClose={() => setSelectedHouse(null)} onSubmit={(startDate: string, endDate: string) =>
+          handleBookingSubmit(
+            selectedHouse.id,
+            startDate,
+            endDate,
+            {
+              currentUser,
+              houses,
+              selectedHouse,
+              setSelectedHouse,
+              navigate
+            }
+          )
+        } />
       )}
 
       {selectedUserDetail && (
@@ -491,6 +379,7 @@ const App: React.FC = () => {
 
       {currentUser && !activeChat && (
         <button
+          title='Messages'
           onClick={() => setActiveChat(MOCK_USERS.find(u => u.role === 'SUPPORT') || null)}
           className="fixed bottom-6 right-6 bg-indigo-600 text-white p-5 rounded-full shadow-2xl hover:scale-110 transition-all z-40"
         >
@@ -504,9 +393,9 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-black text-slate-900">{isEditingHouse.id ? 'Refine Property' : 'Enlist New Haven'}</h2>
-              <button onClick={() => setIsEditingHouse(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
+              <button title='Close' onClick={() => setIsEditingHouse(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); addOrUpdateHouse(isEditingHouse); }} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleAddOrUpdateHouse(isEditingHouse); }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
                 <input placeholder="Sunset Villa..." value={isEditingHouse.title || ''} onChange={e => setIsEditingHouse({ ...isEditingHouse, title: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
@@ -532,9 +421,9 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-black text-slate-900">{isEditingUser.id ? 'Update Member' : `Register ${isEditingUser.role}`}</h2>
-              <button onClick={() => setIsEditingUser(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
+              <button title='Close' onClick={() => setIsEditingUser(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); saveUser(isEditingUser); }} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); handleAddOrUpdateUser(isEditingUser); }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
                 <input placeholder="Jane Cooper" value={isEditingUser.name || ''} onChange={e => setIsEditingUser({ ...isEditingUser, name: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
@@ -554,9 +443,9 @@ const App: React.FC = () => {
           <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-3xl font-black text-slate-900">{isEditingCampaign.id ? 'Optimize Campaign' : 'Initiate Outreach'}</h2>
-              <button onClick={() => setIsEditingCampaign(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
+              <button title='CLose' onClick={() => setIsEditingCampaign(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
             </div>
-            <form onSubmit={(e) => { e.preventDefault(); saveCampaign(isEditingCampaign); }} className="space-y-6">
+            <form onSubmit={(e) => { e.preventDefault(); addOrUpdateCampaign(isEditingCampaign); }} className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Campaign Title</label>
                 <input placeholder="Q4 Market Boost" value={isEditingCampaign.name || ''} onChange={e => setIsEditingCampaign({ ...isEditingCampaign, name: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />

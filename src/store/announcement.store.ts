@@ -3,47 +3,93 @@ import { Announcement } from "../types";
 import { MOCK_ANNOUNCEMENTS } from "../constants";
 import { useAuthStore } from "./auth.store";
 
-type AnnouncementStore = {
+type AnnouncementState = {
     announcements: Announcement[];
-    setAnnouncements: (data: Announcement[]) => void;
+    editingAnnouncement: Announcement | null;
 
-    addAnnouncement: (data: Partial<Announcement>) => void;
-    updateAnnouncement: (id: string, data: Partial<Announcement>) => void;
+    setAnnouncements: (
+        fn: (prev: Announcement[]) => Announcement[]
+    ) => void;
+
+    setEditingAnnouncement: (
+        announcement: Announcement | null
+    ) => void;
+
+    addOrUpdateAnnouncement: (
+        data: Partial<Announcement>
+    ) => void;
+
+    updateAnnouncement: (
+        id: string,
+        data: Partial<Announcement>
+    ) => void;
+
     deleteAnnouncement: (id: string) => void;
 };
 
-export const useAnnouncementStore = create<AnnouncementStore>((set, get) => ({
-    announcements: MOCK_ANNOUNCEMENTS,
+export const useAnnouncementStore = create<AnnouncementState>(
+    (set, get) => ({
+        announcements: MOCK_ANNOUNCEMENTS,
+        editingAnnouncement: null,
 
-    setAnnouncements: (data) => set({ announcements: data }),
+        // ✅ functional setter
+        setAnnouncements: (fn) =>
+            set((state) => ({
+                announcements: fn(state.announcements),
+            })),
 
-    addAnnouncement: (data) => {
-        const user = useAuthStore.getState().currentUser;
+        setEditingAnnouncement: (announcement) =>
+            set({ editingAnnouncement: announcement }),
 
-        const newAnnouncement: Announcement = {
-            id: crypto.randomUUID(),
-            senderId: user?.id || "admin",
-            targetRoles: data.targetRoles || ["TENANT"],
-            title: data.title || "New Announcement",
-            content: data.content || "",
-            timestamp: new Date().toISOString(),
-            priority: data.priority || "NORMAL",
-        };
+        // ✅ ADD / EDIT
+        addOrUpdateAnnouncement: (data) => {
+            const { editingAnnouncement } = get();
+            const { currentUser } = useAuthStore.getState();
 
-        set((state) => ({
-            announcements: [newAnnouncement, ...state.announcements],
-        }));
-    },
+            if (editingAnnouncement?.id) {
+                set((state) => ({
+                    announcements: state.announcements.map((a) =>
+                        a.id === editingAnnouncement.id
+                            ? { ...a, ...data }
+                            : a
+                    ),
+                    editingAnnouncement: null,
+                }));
+            } else {
+                const newAnnouncement: Announcement = {
+                    id: crypto.randomUUID(),
+                    senderId: currentUser?.id || "admin",
+                    targetRoles: data.targetRoles || ["TENANT"],
+                    title: data.title || "New Announcement",
+                    content: data.content || "",
+                    timestamp: new Date().toISOString(),
+                    priority: data.priority || "NORMAL",
+                };
 
-    updateAnnouncement: (id, data) =>
-        set((state) => ({
-            announcements: state.announcements.map((a) =>
-                a.id === id ? { ...a, ...data } : a
-            ),
-        })),
+                set((state) => ({
+                    announcements: [
+                        newAnnouncement,
+                        ...state.announcements,
+                    ],
+                    editingAnnouncement: null,
+                }));
+            }
+        },
 
-    deleteAnnouncement: (id) =>
-        set((state) => ({
-            announcements: state.announcements.filter((a) => a.id !== id),
-        })),
-}));
+        // ✅ UPDATE
+        updateAnnouncement: (id, data) =>
+            set((state) => ({
+                announcements: state.announcements.map((a) =>
+                    a.id === id ? { ...a, ...data } : a
+                ),
+            })),
+
+        // ✅ DELETE
+        deleteAnnouncement: (id) =>
+            set((state) => ({
+                announcements: state.announcements.filter(
+                    (a) => a.id !== id
+                ),
+            })),
+    })
+);

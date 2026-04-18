@@ -2,36 +2,82 @@ import { create } from "zustand";
 import { MaintenanceRequest } from "../types";
 import { MOCK_MAINTENANCE_REQUESTS } from "../constants";
 
-type Store = {
+type MaintenanceRequestState = {
     requests: MaintenanceRequest[];
-    add: (data: MaintenanceRequest) => void;
-    update: (id: string, data: Partial<MaintenanceRequest>) => void;
-    updateStatus: (id: string, status: MaintenanceRequest["status"]) => void;
-    delete: (id: string) => void;
+    editingRequest: MaintenanceRequest | null;
+
+    setRequests: (
+        fn: (prev: MaintenanceRequest[]) => MaintenanceRequest[]
+    ) => void;
+
+    setEditingRequest: (request: MaintenanceRequest | null) => void;
+
+    addOrUpdateRequest: (data: MaintenanceRequest) => void;
+    updateRequest: (
+        id: string,
+        data: Partial<MaintenanceRequest>
+    ) => void;
+
+    updateStatus: (
+        id: string,
+        status: MaintenanceRequest["status"]
+    ) => void;
+
+    deleteRequest: (id: string) => void;
 };
 
-export const useMaintenanceStore = create<Store>((set) => ({
-    requests: MOCK_MAINTENANCE_REQUESTS,
+export const useMaintenanceRequestStore =
+    create<MaintenanceRequestState>((set, get) => ({
+        requests: MOCK_MAINTENANCE_REQUESTS,
+        editingRequest: null,
 
-    add: (data) =>
-        set((state) => ({ requests: [data, ...state.requests] })),
+        // ✅ functional setter
+        setRequests: (fn) =>
+            set((state) => ({
+                requests: fn(state.requests),
+            })),
 
-    update: (id, data) =>
-        set((state) => ({
-            requests: state.requests.map((r) =>
-                r.id === id ? { ...r, ...data } : r
-            ),
-        })),
+        setEditingRequest: (request) =>
+            set({ editingRequest: request }),
 
-    updateStatus: (id, status) =>
-        set((state) => ({
-            requests: state.requests.map((r) =>
-                r.id === id ? { ...r, status } : r
-            ),
-        })),
+        // ✅ ADD / EDIT
+        addOrUpdateRequest: (data) => {
+            const { editingRequest } = get();
 
-    delete: (id) =>
-        set((state) => ({
-            requests: state.requests.filter((r) => r.id !== id),
-        })),
-}));
+            if (editingRequest?.id) {
+                set((state) => ({
+                    requests: state.requests.map((r) =>
+                        r.id === editingRequest.id ? { ...r, ...data } : r
+                    ),
+                    editingRequest: null,
+                }));
+            } else {
+                set((state) => ({
+                    requests: [data, ...state.requests],
+                    editingRequest: null,
+                }));
+            }
+        },
+
+        // ✅ UPDATE
+        updateRequest: (id, data) =>
+            set((state) => ({
+                requests: state.requests.map((r) =>
+                    r.id === id ? { ...r, ...data } : r
+                ),
+            })),
+
+        // ✅ UPDATE STATUS
+        updateStatus: (id, status) =>
+            set((state) => ({
+                requests: state.requests.map((r) =>
+                    r.id === id ? { ...r, status } : r
+                ),
+            })),
+
+        // ✅ DELETE
+        deleteRequest: (id) =>
+            set((state) => ({
+                requests: state.requests.filter((r) => r.id !== id),
+            })),
+    }));
