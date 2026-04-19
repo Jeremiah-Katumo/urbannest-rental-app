@@ -24,7 +24,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center">
             <div className="relative mb-4">
               <img src={user.avatar} className="w-24 h-24 rounded-full border-4 border-indigo-50" alt="" />
-              <button className="absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full shadow-lg">
+              <button title='Save' className="absolute bottom-0 right-0 bg-indigo-600 text-white p-1.5 rounded-full shadow-lg">
                 <Save className="w-4 h-4" />
               </button>
             </div>
@@ -52,6 +52,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
                 <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Full Name</label>
                 <input 
                   type="text" 
+                  title='Name'
                   value={profile.name} 
                   onChange={e => setProfile({...profile, name: e.target.value})}
                   className="w-full p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 border-none"
@@ -61,6 +62,7 @@ const Settings: React.FC<SettingsProps> = ({ user, onLogout }) => {
                 <label className="text-xs font-bold text-gray-400 uppercase block mb-1">Email Address</label>
                 <input 
                   type="email" 
+                  title='Email'
                   value={profile.email} 
                   onChange={e => setProfile({...profile, email: e.target.value})}
                   className="w-full p-3 bg-gray-50 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 border-none"

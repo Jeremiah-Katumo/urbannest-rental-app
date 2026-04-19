@@ -49,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ userRole, onLogout }) => {
     { id: 'USER_MANAGEMENT', label: 'User Management', icon: Users, roles: ['ADMIN'], path: '/user-management' },
     { id: 'CUSTOM_FIELDS', label: 'Custom Fields', icon: Settings2, roles: ['ADMIN'], path: '/custom-fields' },
     { id: 'COMMUNICATIONS', label: 'News', icon: Megaphone, roles: ['ADMIN', 'LANDLORD', 'AGENT', 'SUPPORT'], path: '/communications' },
-    { id: 'SETTINGS', label: 'Settings', icon: Settings, roles: ['ADMIN', 'LANDLORD', 'AGENT', 'SUPPORT'], path: '/settings' },
+    { id: 'SETTINGS', label: 'Settings', icon: Settings, roles: ['ADMIN', 'LANDLORD', 'AGENT', 'SUPPORT'], path: 'management/settings' },
   ];
 
   const visibleItems = menuItems.filter(item => item.roles.includes(userRole));

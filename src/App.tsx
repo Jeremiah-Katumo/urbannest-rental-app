@@ -50,6 +50,9 @@ import { useSubscriptionPlanStore } from './store/subscriptionPlan.store';
 import { useRoleStore } from './store/role.store';
 import { useCustomFieldStore } from './store/customField.store';
 import { useLeadStore } from './store/lead.store';
+import CampaignModal from './components/modals/CampaignModal';
+import HouseModal from './components/modals/HouseModal';
+import UserModal from './components/modals/UserModal';
 
 const App: React.FC = () => {
   const navigate = useNavigate();
@@ -101,7 +104,7 @@ const App: React.FC = () => {
   const isEditingCampaign = useCampaignStore(s => s.editingCampaign);
   const setCampaigns = useCampaignStore((s) => s.setCampaigns);
   const setIsEditingCampaign = useCampaignStore((s) => s.setEditingCampaign);
-  const addOrUpdateCampaign = useCampaignStore((s) => s.addOrUpdateCampaign);
+  const handleAddOrUpdateCampaign = useCampaignStore((s) => s.addOrUpdateCampaign);
   const updateCampaign = useCampaignStore((s) => s.updateCampaign);
   const deleteCampaign = useCampaignStore((s) => s.deleteCampaign);
 
@@ -330,6 +333,7 @@ const App: React.FC = () => {
             <Route path="/management/campaigns" element={requireAuth(<ManagementPage type="CAMPAIGNS" {...managementProps} />)} />
             <Route path="/management/reports" element={requireAuth(<Reports />)} />
             <Route path="/management/transporters" element={requireAuth(<ManagementPage type="TRANSPORTERS" {...managementProps} />)} />
+            <Route path='/management/settings' element={requireAuth(<Settings user={currentUser!} onLogout={handleLogout} />)} />
             <Route path="/user-management" element={requireAuth(<ManagementPage type="USERS" {...managementProps} />)} />
             <Route path="/delivery-requests" element={requireAuth(<ManagementPage type="DELIVERY_REQUESTS" {...managementProps} />)} />
 
@@ -404,81 +408,27 @@ const App: React.FC = () => {
 
       {/* MODAL FORMS FOR CRUD */}
       {isEditingHouse && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-xl rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-black text-slate-900">{isEditingHouse.id ? 'Refine Property' : 'Enlist New Haven'}</h2>
-              <button title='Close' onClick={() => setIsEditingHouse(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); handleAddOrUpdateHouse(isEditingHouse); }} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Title</label>
-                <input placeholder="Sunset Villa..." value={isEditingHouse.title || ''} onChange={e => setIsEditingHouse({ ...isEditingHouse, title: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rent ($/mo)</label>
-                  <input type="number" placeholder="2500" value={isEditingHouse.price || ''} onChange={e => setIsEditingHouse({ ...isEditingHouse, price: Number(e.target.value) })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Location</label>
-                  <input placeholder="Manhattan, NY" value={isEditingHouse.location || ''} onChange={e => setIsEditingHouse({ ...isEditingHouse, location: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-                </div>
-              </div>
-              <button type="submit" className="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-lg">Commit Records</button>
-            </form>
-          </div>
-        </div>
+        <HouseModal
+          editingHouse={isEditingHouse}
+          setEditingHouse={setIsEditingHouse}
+          addOrUpdateHouse={handleAddOrUpdateHouse}
+        />
       )}
 
       {isEditingUser && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-black text-slate-900">{isEditingUser.id ? 'Update Member' : `Register ${isEditingUser.role}`}</h2>
-              <button title='Close' onClick={() => setIsEditingUser(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); handleAddOrUpdateUser(isEditingUser); }} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Full Name</label>
-                <input placeholder="Jane Cooper" value={isEditingUser.name || ''} onChange={e => setIsEditingUser({ ...isEditingUser, name: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email</label>
-                <input type="email" placeholder="jane@example.com" value={isEditingUser.email || ''} onChange={e => setIsEditingUser({ ...isEditingUser, email: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-              </div>
-              <button type="submit" className="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-lg">Save Member Data</button>
-            </form>
-          </div>
-        </div>
+        <UserModal
+          editingUser={isEditingUser}
+          setEditingUser={setIsEditingUser}
+          addOrUpdateUser={handleAddOrUpdateUser}
+        />
       )}
 
       {isEditingCampaign && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-          <div className="bg-white w-full max-w-lg rounded-[3rem] p-10 shadow-2xl animate-in zoom-in duration-300">
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-3xl font-black text-slate-900">{isEditingCampaign.id ? 'Optimize Campaign' : 'Initiate Outreach'}</h2>
-              <button title='CLose' onClick={() => setIsEditingCampaign(null)} className="p-2 text-slate-400 hover:text-slate-600 bg-slate-50 rounded-full"><X className="w-6 h-6" /></button>
-            </div>
-            <form onSubmit={(e) => { e.preventDefault(); addOrUpdateCampaign(isEditingCampaign); }} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Campaign Title</label>
-                <input placeholder="Q4 Market Boost" value={isEditingCampaign.name || ''} onChange={e => setIsEditingCampaign({ ...isEditingCampaign, name: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-              </div>
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Allocated Budget</label>
-                  <input type="number" placeholder="5000" value={isEditingCampaign.budget || ''} onChange={e => setIsEditingCampaign({ ...isEditingCampaign, budget: Number(e.target.value) })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Target Segment</label>
-                  <input placeholder="Corporate" value={isEditingCampaign.targetAudience || ''} onChange={e => setIsEditingCampaign({ ...isEditingCampaign, targetAudience: e.target.value })} className="w-full p-4 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-600 font-bold" required />
-                </div>
-              </div>
-              <button type="submit" className="w-full py-5 bg-indigo-600 text-white font-black rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all text-lg">Launch Campaign</button>
-            </form>
-          </div>
-        </div>
+        <CampaignModal
+          editingCampaign={isEditingCampaign}
+          setEditingCampaign={setIsEditingCampaign}
+          addOrUpdateCampaign={handleAddOrUpdateCampaign}
+        />
       )}
     </div>
   );
