@@ -24,7 +24,7 @@ const Navbar: React.FC<NavbarProps> = ({ currentRole, currentUser }) => {
     { id: 'MY_BOOKINGS', label: 'Bookings', icon: BookOpen, roles: ['TENANT'], path: '/my-bookings' },
     { id: 'TRANSPORTERS', label: 'Movers', icon: Truck, roles: ['TENANT'], path: '/transporters' },
     { id: 'LEASES', label: 'Leases', icon: FileText, roles: ['TENANT', 'LANDLORD'], path: '/leases' },
-    // { id: 'SUPPORT', label: 'Support', icon: LifeBuoy, roles: ['TENANT', 'LANDLORD', 'AGENT'], path: '/support' },
+    { id: 'SUPPORT', label: 'Support', icon: LifeBuoy, roles: ['TENANT', 'LANDLORD', 'AGENT'], path: '/support' },
     { id: 'COMMUNICATIONS', label: 'News', icon: Megaphone, roles: ['TENANT', 'LANDLORD', 'AGENT', 'ADMIN', 'SUPPORT'], path: '/communications' },
     { id: 'SUBSCRIPTIONS', label: 'Business Plans', icon: Crown, roles: ['TENANT', 'LANDLORD', 'AGENT', 'TRANSPORTER'], path: '/subscriptions' },
     { id: 'MAP', label: 'Map', icon: MapPin, roles: ['TENANT'], path: '/map' },

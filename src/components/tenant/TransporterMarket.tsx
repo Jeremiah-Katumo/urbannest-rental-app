@@ -44,6 +44,14 @@ const TransporterMarket: React.FC<TransporterMarketProps> = ({ transporters, cur
             />
           </div>
           <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
+            <button title='Table' className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              Table
+            </button>
+            <button title='Table' className="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all">
+              Table
+            </button>
+          </div>
+          <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-100 shadow-sm">
             {vehicleTypes.map(type => (
               <button
                 key={type}

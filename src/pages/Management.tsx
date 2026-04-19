@@ -1,6 +1,7 @@
 import React from 'react';
 import ManagementTable from '../components/admin/ManagementTable';
-import { User, House, Campaign } from '../types';
+import { User, House, Campaign, SubscriptionPlan } from '../types';
+
 
 interface ManagementPageProps {
   type:
@@ -11,22 +12,26 @@ interface ManagementPageProps {
   | 'CAMPAIGNS'
   | 'TRANSPORTERS'
   | 'USERS'
-  | 'DELIVERY_REQUESTS';
+  | 'DELIVERY_REQUESTS'
+  | 'SUBSCRIPTION_PLANS';
 
   currentUser: User | null;
 
   houses: House[];
   users: User[];
   campaigns: Campaign[];
+  subscriptionPlans: SubscriptionPlan[];
 
   // ✅ FIXED: match zustand functional updater style
   setHouses: (fn: (prev: House[]) => House[]) => void;
   setUsers: (fn: (prev: User[]) => User[]) => void;
   setCampaigns: (fn: (prev: Campaign[]) => Campaign[]) => void;
+  setSubscriptionPlans: (fn: (prev: SubscriptionPlan[]) => SubscriptionPlan[]) => void;
 
   setIsEditingHouse: (house: House | null) => void;
   setIsEditingUser: (user: User | null) => void;
   setIsEditingCampaign: (campaign: Campaign | null) => void;
+  setIsEditingSubscriptionPlan: (plan: SubscriptionPlan | null) => void;
 
   setSelectedUserDetail: (user: User | null) => void;
   setSelectedHouseView: (house: House | null) => void;
@@ -38,12 +43,15 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
   houses,
   users,
   campaigns,
+  subscriptionPlans,
   setHouses,
   setUsers,
   setCampaigns,
+  setSubscriptionPlans,
   setIsEditingHouse,
   setIsEditingUser,
   setIsEditingCampaign,
+  setIsEditingSubscriptionPlan,
   setSelectedUserDetail,
   setSelectedHouseView
 }) => {
@@ -80,12 +88,14 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
     data = campaigns;
     title = 'Marketing Campaigns';
     onAdd = () => setIsEditingCampaign({} as Campaign);
-
+  } else if (type === 'SUBSCRIPTION_PLANS') {
+    data = subscriptionPlans;
+    title = 'Subscription Plans';
+    onAdd = () => setIsEditingSubscriptionPlan({} as SubscriptionPlan)
   } else if (type === 'TRANSPORTERS') {
     data = users.filter(u => u.role === 'TRANSPORTER');
     title = 'Logistics Partners';
     onAdd = () => setIsEditingUser({ role: 'TRANSPORTER' } as User);
-
   } else if (type === 'USERS') {
     data = users;
     title = 'System User Management';
@@ -107,6 +117,8 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
       setHouses(prev => prev.filter(h => h.id !== id));
     } else if (type === 'CAMPAIGNS') {
       setCampaigns(prev => prev.filter(c => c.id !== id));
+    } else if (type === 'SUBSCRIPTION_PLANS') {
+      setSubscriptionPlans(prev => prev.filter(p => p.id === id));
     } else {
       setUsers(prev => prev.filter(u => u.id !== id));
     }
@@ -115,6 +127,7 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
   const handleEdit = (item: any) => {
     if (type === 'HOMES') setIsEditingHouse(item);
     else if (type === 'CAMPAIGNS') setIsEditingCampaign(item);
+    else if (type === 'SUBSCRIPTION_PLANS') setIsEditingSubscriptionPlan(item);
     else setIsEditingUser(item);
   };
 
@@ -126,8 +139,16 @@ const ManagementPage: React.FC<ManagementPageProps> = ({
       onAdd={onAdd}
       onEdit={handleEdit}
       onDelete={handleDelete}
-      onViewDetails={setSelectedUserDetail}
-      onViewProperty={setSelectedHouseView}
+      onViewDetails={
+        type !== 'HOMES' && type !== 'CAMPAIGNS' && type !== 'SUBSCRIPTION_PLANS'
+          ? (item) => setSelectedUserDetail(item as User)
+          : undefined
+      }
+      onViewProperty={
+        type === 'HOMES'
+          ? (item) => setSelectedHouseView(item as House)
+          : undefined
+      }
     />
   );
 };

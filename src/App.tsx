@@ -184,6 +184,7 @@ const App: React.FC = () => {
   const activeSubscriptionPlan = useSubscriptionPlanStore(s => s.activatePlan);
   const setSubscriptionPlans = useSubscriptionPlanStore(s => s.setPlans);
   const handleAddOrUpdateSubscriptionPlan = useSubscriptionPlanStore(s => s.addOrUpdatePlan);
+  const setIsEditingSubscriptionPlan = useSubscriptionPlanStore(s => s.setEditingPlan);
   const handleSubscribePlan = useSubscriptionPlanStore(s => s.subscribePlan);
   const updatePlan = useSubscriptionPlanStore(s => s.updatePlan);
   const deletePlan = useSubscriptionPlanStore(s => s.deletePlan);
@@ -224,8 +225,10 @@ const App: React.FC = () => {
 
   // Guardrail for Business Subscription
   useEffect(() => {
-    const managementPages = ['/dashboard', '/management/homes', '/management/tenants', '/management/agents', '/management/landlords', '/management/reports', '/management/campaigns', '/payments', '/transporters', '/communications'];
-    if (currentUser && currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPPORT' && currentUser.role !== 'TENANT') {
+    const managementPages = ['/dashboard', '/management/homes', '/management/tenants', '/management/agents', '/management/landlords', '/management/reports', '/management/campaigns', '/payments', '/management/transporters', '/communications'];
+    if (!currentUser) {
+      navigate('/')
+    } else if (currentUser && currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPPORT' && currentUser.role !== 'TENANT') {
       if (!currentUser.isSubscribed && managementPages.includes(location.pathname)) {
         navigate('/subscriptions');
       }
@@ -261,12 +264,15 @@ const App: React.FC = () => {
     houses,
     users,
     campaigns,
+    subscriptionPlans,
     setHouses,
     setUsers,
     setCampaigns,
+    setSubscriptionPlans,
     setIsEditingHouse,
     setIsEditingUser,
     setIsEditingCampaign,
+    setIsEditingSubscriptionPlan,
     setSelectedUserDetail,
     setSelectedHouseView
   };
@@ -333,6 +339,7 @@ const App: React.FC = () => {
             <Route path="/management/campaigns" element={requireAuth(<ManagementPage type="CAMPAIGNS" {...managementProps} />)} />
             <Route path="/management/reports" element={requireAuth(<Reports />)} />
             <Route path="/management/transporters" element={requireAuth(<ManagementPage type="TRANSPORTERS" {...managementProps} />)} />
+            <Route path="/management/subscriptions" element={requireAuth(<div className="w-full px-4 sm:px-6 lg:px-12 py-12"><SubscriptionPlans plans={subscriptionPlans} currentUser={currentUser!} onSubscribe={handleSubscribePlan} /></div>)} />
             <Route path='/management/settings' element={requireAuth(<Settings user={currentUser!} onLogout={handleLogout} />)} />
             <Route path="/user-management" element={requireAuth(<ManagementPage type="USERS" {...managementProps} />)} />
             <Route path="/delivery-requests" element={requireAuth(<ManagementPage type="DELIVERY_REQUESTS" {...managementProps} />)} />

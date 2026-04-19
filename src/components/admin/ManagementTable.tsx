@@ -1,20 +1,42 @@
 
 import React from 'react';
 import { Plus, Megaphone, UserPlus, Search, Edit, Trash2 } from 'lucide-react';
-import { User, House, Campaign } from '../../types';
+import { User, House, Campaign, SubscriptionPlan } from '../../types';
 
-interface ManagementTableProps {
-  type: 'HOMES' | 'TENANTS' | 'LANDLORDS' | 'AGENTS' | 'CAMPAIGNS' | 'TRANSPORTERS' | 'USERS' | 'DELIVERY_REQUESTS';
-  data: any[];
-  title: string;
-  onAdd: () => void;
-  onEdit: (item: any) => void;
-  onDelete: (id: string) => void;
-  onViewDetails?: (item: any) => void;
-  onViewProperty?: (item: any) => void;
+
+type ManagementTypeMap = {
+  HOMES: House;
+  TENANTS: User;
+  LANDLORDS: User;
+  AGENTS: User;
+  TRANSPORTERS: User;
+  USERS: User;
+  CAMPAIGNS: Campaign;
+  SUBSCRIPTION_PLANS: SubscriptionPlan;
+  DELIVERY_REQUESTS: {
+    id: string;
+    name: string;
+    type: string;
+    status: string;
+    price: number;
+    date: string;
+  };
 }
 
-const ManagementTable: React.FC<ManagementTableProps> = ({
+interface ManagementTableProps<T extends keyof ManagementTypeMap> {
+  type: T;
+  data: ManagementTypeMap[T][];
+  title: string;
+
+  onAdd: () => void;
+  onEdit: (item: ManagementTypeMap[T]) => void;
+  onDelete: (id: string) => void;
+
+  onViewDetails?: (item: ManagementTypeMap[T]) => void;
+  onViewProperty?: (item: ManagementTypeMap[T]) => void;
+}
+
+const ManagementTable = <T extends keyof ManagementTypeMap>({
   type,
   data,
   title,
@@ -23,7 +45,20 @@ const ManagementTable: React.FC<ManagementTableProps> = ({
   onDelete,
   onViewDetails,
   onViewProperty
-}) => {
+}: ManagementTableProps<T>) => {
+
+  const isHouse = (item: any): item is House =>
+    'location' in item && 'price' in item;
+
+  const isUser = (item: any): item is User =>
+    'email' in item && 'role' in item;
+
+  const isCampaign = (item: any): item is Campaign =>
+    'budget' in item;
+
+  const isSubscriptionPlan = (item: any): item is SubscriptionPlan =>
+    'features' in item;
+
   return (
     <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden animate-in fade-in duration-500">
       <div className="p-8 border-b border-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -31,11 +66,11 @@ const ManagementTable: React.FC<ManagementTableProps> = ({
           <h2 className="text-2xl font-black text-slate-900">{title}</h2>
           <p className="text-slate-400 text-sm mt-1">Manage and update your records in real-time.</p>
         </div>
-        <button 
+        <button
           onClick={onAdd}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-2xl shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-95"
         >
-          {type === 'HOMES' ? <Plus className="w-5 h-5"/> : (type === 'CAMPAIGNS' ? <Megaphone className="w-5 h-5"/> : <UserPlus className="w-5 h-5"/>)}
+          {type === 'HOMES' ? <Plus className="w-5 h-5" /> : (type === 'CAMPAIGNS' ? <Megaphone className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />)}
           Add {type.slice(0, -1).toLowerCase()}
         </button>
       </div>
@@ -64,58 +99,95 @@ const ManagementTable: React.FC<ManagementTableProps> = ({
               <tr key={item.id} className="hover:bg-slate-50/30 transition-colors group">
                 <td className="p-5">
                   <div className="flex items-center gap-4">
-                    {item.images || item.avatar ? (
-                      <img src={item.images ? item.images[0] : item.avatar} className="w-12 h-12 rounded-2xl object-cover shadow-sm" />
-                    ) : <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600"><Megaphone className="w-5 h-5"/></div>}
+                    {isHouse(item) && item.images ? (
+                      <img src={item.images[0]} className="w-12 h-12 rounded-2xl object-cover shadow-sm" title='Item Image' />
+                    ) : isUser(item) && item.avatar ? (
+                      <img src={item.avatar} className="w-12 h-12 rounded-2xl object-cover shadow-sm" title='Item Image' />
+                    ) : <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600"><Megaphone className="w-5 h-5" /></div>}
                     <div>
-                      <p className="text-sm font-black text-slate-900">{item.title || item.name}</p>
-                      <p className="text-xs text-slate-400 font-medium">{item.email || item.type || item.description?.substring(0, 30) + "..."}</p>
+                      <p className="text-sm font-black text-slate-900">
+                        {isHouse(item)
+                          ? item.title
+                          : isUser(item)
+                            ? item.name
+                            : isCampaign(item)
+                              ? item.name
+                              : ''}
+                      </p>
+                      <p className="text-xs text-slate-400 font-medium">
+                        {isUser(item)
+                          ? item.email
+                          : isCampaign(item)
+                            ? item.description?.slice(0, 30) + "..."
+                            : 'type' in item
+                              ? item.type
+                              : ''}
+                      </p>
                     </div>
                   </div>
                 </td>
                 <td className="p-5 font-bold text-sm text-slate-700">
-                  {item.price ? `$${item.price}` : (item.budget ? `$${item.budget}` : (item.phone || item.email))}
+                  {isHouse(item)
+                    ? `$${item.price}`
+                    : isCampaign(item)
+                      ? `$${item.budget}`
+                      : isUser(item)
+                        ? item.phone || item.email
+                        : ''}
                 </td>
                 <td className="p-5">
-                  {item.location || (
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                      item.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                    }`}>
-                      {item.status || (item.isAvailable ? 'Active' : 'Reserved')}
+                  {isHouse(item) ? (
+                    item.location
+                  ) : (
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${'status' in item && item.status === 'ACTIVE'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-red-100 text-red-700'
+                        }`}
+                    >
+                      {'status' in item
+                        ? item.status
+                        : 'isAvailable' in item
+                          ? item.isAvailable
+                            ? 'Active'
+                            : 'Reserved'
+                          : ''}
                     </span>
                   )}
                 </td>
                 <td className="p-5 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     {type === 'HOMES' && onViewProperty && (
-                      <button 
+                      <button
                         onClick={() => onViewProperty(item)}
                         className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-600 hover:text-white transition-all"
                         title="View Property"
                       >
-                        <Search className="w-4 h-4"/>
+                        <Search className="w-4 h-4" />
                       </button>
                     )}
                     {type !== 'HOMES' && type !== 'CAMPAIGNS' && onViewDetails && (
-                      <button 
+                      <button
                         onClick={() => onViewDetails(item)}
                         className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
                         title="View Details"
                       >
-                        <Search className="w-4 h-4"/>
+                        <Search className="w-4 h-4" />
                       </button>
                     )}
-                    <button 
-                      onClick={() => onEdit(item)} 
+                    <button
+                      title='Edit'
+                      onClick={() => onEdit(item)}
                       className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl hover:bg-indigo-600 hover:text-white transition-all"
                     >
-                      <Edit className="w-4 h-4"/>
+                      <Edit className="w-4 h-4" />
                     </button>
-                    <button 
+                    <button
+                      title='Delete'
                       onClick={() => onDelete(item.id)}
                       className="p-2.5 bg-red-50 text-red-600 rounded-xl hover:bg-red-600 hover:text-white transition-all"
                     >
-                      <Trash2 className="w-4 h-4"/>
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
